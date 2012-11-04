@@ -44,15 +44,10 @@ void setup()
   pinMode(PASS_LED_PIN, OUTPUT);
   pinMode(FAIL_LED_PIN, OUTPUT);
 
-  digitalWrite(TEST_LED_PIN, HIGH);
-  delay(400);
-  digitalWrite(TEST_LED_PIN, LOW);
-  digitalWrite(PASS_LED_PIN, HIGH);
-  delay(400);
-  digitalWrite(PASS_LED_PIN, LOW);
-  digitalWrite(FAIL_LED_PIN, HIGH);
-  delay(400);
-  digitalWrite(FAIL_LED_PIN, LOW);
+  //flash em
+  fade_led(TEST_LED_PIN, 512);
+  fade_led(PASS_LED_PIN, 512);
+  fade_led(FAIL_LED_PIN, 512);
 
   //setup our button
   pinMode(BUTTON_PIN, INPUT);
@@ -135,27 +130,38 @@ void read_quadrature_b()
   }
 }
 
+void output_test_status(String test, String status)
+{
+  //show our LCD info.
+  lcd.begin(16, 2);
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("TEST: ");
+  lcd.print(test);
+  lcd.setCursor(0,1);
+  lcd.print("STATUS: ");
+  lcd.print(status);
+
+  //output to serial.
+  Serial.print("TEST: ");
+  Serial.print(test);
+  Serial.print(" STATUS: ");
+  Serial.println(status);
+}
+
 void loop()
 {
   lcd.begin(16, 2);
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Press start");
+  lcd.print("PRESS BUTTON");
   lcd.setCursor(0,1);
-  lcd.print("to begin test.");
+  lcd.print("TO BEGIN TEST.");
   
   //wait until we get a button press.
   while (digitalRead(BUTTON_PIN))
     delay(1);
     
-  lcd.begin(16, 2);
-  lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print("TESTING.");
-    
-  //let em know.
-  Serial.println("NEW TEST START.");
-  
   //setup our leds.
   digitalWrite(TEST_LED_PIN, HIGH);
   digitalWrite(PASS_LED_PIN, LOW);
@@ -213,9 +219,9 @@ void loop()
   
   //show the result.
   if (pass)
-    Serial.println("BOARD PASSED.");
+    output_test_status("ALL TESTS", "PASS");
   else
-    Serial.println("BOARD FAILED.");
+    output_test_status("ALL TESTS", "FAIL");
   
   //wait until we get a button press.
   while (digitalRead(BUTTON_PIN))
@@ -240,9 +246,9 @@ boolean measure_steps(int steps, int expected, int tolerance, int delay_time)
   //log our results.
   Serial.print("EXPECTED: ");
   Serial.print(expected, DEC);
-  Serial.print("TOLERANCE: ");
+  Serial.print(" TOLERANCE: ");
   Serial.print(tolerance, DEC);
-  Serial.print("ACTUAL: ");
+  Serial.print(" ACTUAL: ");
   Serial.print(encoder_position, DEC);
   Serial.println();
   
@@ -260,19 +266,17 @@ boolean test_full_fwd()
   digitalWrite(ENABLE_PIN, LOW);
   digitalWrite(DIR_PIN, HIGH);
   
+  output_test_status("FULL FWD", "RUNNING");
+  
   //okay, do our test.
   if (measure_steps(200, 1600, 10, 16))
   {
-    lcd.clear();
-    lcd.print("FULL STEP FWD: PASS");
-    Serial.println("FULL STEP FORWARD MODE: PASS");
+    output_test_status("FULL FWD", "PASS");
     return true;
   }
   else
   {
-    lcd.clear();
-    lcd.print("FULL STEP FWD: FAIL");
-    Serial.println("FULL STEP FORWARD MODE: FAIL");
+    output_test_status("FULL FWD", "FAIL");
     return false;
   } 
 }
@@ -287,19 +291,17 @@ boolean test_full_rev()
   digitalWrite(ENABLE_PIN, LOW);
   digitalWrite(DIR_PIN, LOW);
   
+  output_test_status("FULL REV", "RUNNING");
+  
   //okay, do our test.
   if (measure_steps(200, -1600, 10, 16))
   {
-    lcd.clear();
-    lcd.print("FULL STEP REV: PASS");
-    Serial.println("FULL STEP REVERSE MODE: PASS");
+    output_test_status("FULL REV", "PASS");
     return true;
   }
   else
   {
-    lcd.clear();
-    lcd.print("FULL STEP REV: FAIL");
-    Serial.println("FULL STEP REVERSE MODE: FAIL");
+    output_test_status("FULL REV", "FAIL");
     return false;
   }
 }
@@ -313,20 +315,18 @@ boolean test_half_fwd()
   digitalWrite(MS2_PIN, LOW);
   digitalWrite(ENABLE_PIN, LOW);
   digitalWrite(DIR_PIN, HIGH);
+
+  output_test_status("HALF FWD", "RUNNING");
   
   //okay, do our test.
   if (measure_steps(400, 1600, 10, 8))
   {
-    lcd.clear();
-    lcd.print("HALF STEP FWD: PASS");
-    Serial.println("HALF STEP FORWARD MODE: PASS");
+    output_test_status("HALF FWD", "PASS");
     return true;
   }
   else
   {
-    lcd.clear();
-    lcd.print("HALF STEP FWD: FAIL");
-    Serial.println("HALF STEP FORWARD MODE: FAIL");
+    output_test_status("HALF FWD", "FAIL");
     return false;
   }
 }
@@ -341,19 +341,17 @@ boolean test_half_rev()
   digitalWrite(ENABLE_PIN, LOW);
   digitalWrite(DIR_PIN, LOW);
   
+  output_test_status("HALF REV", "RUNNING");
+  
   //okay, do our test.
   if (measure_steps(400, -1600, 10, 8))
   {
-    lcd.clear();
-    lcd.print("HALF STEP REV: PASS");
-    Serial.println("HALF STEP REVERSE MODE: PASS");
+    output_test_status("HALF REV", "PASS");
     return true;
   }
   else
   {
-    lcd.clear();
-    lcd.print("HALF STEP REV: FAIL");
-    Serial.println("HALF STEP REVERSE MODE: FAIL");
+    output_test_status("FULL REV", "FAIL");
     return false;
   }
 }
@@ -368,19 +366,17 @@ boolean test_1_4_fwd()
   digitalWrite(ENABLE_PIN, LOW);
   digitalWrite(DIR_PIN, HIGH);
   
+  output_test_status("1/4  FWD", "RUNNING");
+  
   //okay, do our test.
   if (measure_steps(800, 1600, 10, 4))
   {
-    lcd.clear();
-    lcd.print("1/4 STEP FWD: PASS");
-    Serial.println("1/4 STEP FORWARD MODE: PASS");
+    output_test_status("1/4  FWD", "PASS");
     return true;
   }
   else
   {
-    lcd.clear();
-    lcd.print("1/4 STEP FWD: FAIL");
-    Serial.println("1/4 STEP FORWARD MODE: FAIL");
+    output_test_status("1/4  FWD", "FAIL");
     return false;
   } 
 }
@@ -395,19 +391,17 @@ boolean test_1_4_rev()
   digitalWrite(ENABLE_PIN, LOW);
   digitalWrite(DIR_PIN, LOW);
   
+  output_test_status("1/4  REV", "RUNNING");
+  
   //okay, do our test.
   if (measure_steps(800, -1600, 10, 4))
   {
-    lcd.clear();
-    lcd.print("1/4 STEP REV: PASS");
-    Serial.println("1/4 STEP REVERSE MODE: PASS");
+    output_test_status("1/4  REV", "PASS");
     return true;
   }
   else
   {
-    lcd.clear();
-    lcd.print("1/4 STEP REV: FAIL");
-    Serial.println("1/4 STEP REVERSE MODE: FAIL");
+    output_test_status("1/4  REV", "FAIL");
     return false;
   } 
 }
@@ -422,19 +416,17 @@ boolean test_1_16_fwd()
   digitalWrite(ENABLE_PIN, LOW);
   digitalWrite(DIR_PIN, HIGH);
   
+  output_test_status("1/16 FWD", "RUNNING");
+  
   //okay, do our test.
   if (measure_steps(3200, 1600, 10, 1))
   {
-    lcd.clear();
-    lcd.print("1/16 STEP FWD: PASS");
-    Serial.println("1/16 STEP FORWARD MODE: PASS");
+    output_test_status("1/16 FWD", "PASS");
     return true;
   }
   else
   {
-    lcd.clear();
-    lcd.print("1/16 STEP FWD: FAIL");
-    Serial.println("1/16 STEP FORWARD MODE: FAIL");
+    output_test_status("1/16 FWD", "FAIL");
     return false;
   }
 }
@@ -449,19 +441,37 @@ boolean test_1_16_rev()
   digitalWrite(ENABLE_PIN, LOW);
   digitalWrite(DIR_PIN, LOW);
   
+  output_test_status("1/16 REV", "RUNNING");
+  
   //okay, do our test.
   if (measure_steps(3200, -1600, 10, 1))
   {
-    lcd.clear();
-    lcd.print("1/16 STEP REV: PASS");
-    Serial.println("1/16 STEP REVERSE MODE: PASS");
+    output_test_status("1/16 REV", "PASS");
     return true;
   }
   else
   {
-    lcd.clear();
-    lcd.print("1/16 STEP REV: FAIL");
-    Serial.println("1/16 STEP REVERSE MODE: FAIL");
+    output_test_status("1/16 REV", "FAIL");
     return false;
   }
+}
+
+//simple function to blink the LED.
+void fade_led(byte pin, int milliseconds)
+{
+  int top = milliseconds/2;
+
+  for (int i=0; i<top; i++)
+  {
+    analogWrite(pin, map(i, 0, top, 0, 255));
+    delay(1);
+  }
+
+  for (int i=top; i>0; i--)
+  {
+    analogWrite(pin, map(i, 0, top, 0, 255));
+    delay(1);
+  }
+
+  analogWrite(pin, 0);
 }
