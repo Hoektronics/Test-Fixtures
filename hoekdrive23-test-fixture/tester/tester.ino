@@ -56,7 +56,7 @@ void setup()
   
   //initialize our serial port
   Serial.begin(115200);
-  Serial.println("HoekDrive23 Test Fixture v1.0");
+  Serial.println("HoekDrive23 RevC Test Fixture v1.0");
   
   //initialize our stepper driver
   pinMode(STEP_PIN, OUTPUT);
@@ -153,6 +153,14 @@ void loop()
   boolean pass = false;
   while (true)
   {
+    //turn on 5v power supply @ check idle current
+    //turn on VMOT power supply @ check idle current
+
+    //enable motor @ VREF = 100 and check current
+    //enable motor @ VREF = 75 and check current
+    //enable motor @ VREF = 50 and check current
+    //enable motor @ VREF = 25 and check current
+
     pass = test_full_fwd();
     if (!pass)
       break;
@@ -188,6 +196,9 @@ void loop()
     //okay, we're done.
     break;
   }
+  
+  //turn off VMOT supply
+  //turn off 5V supply
   
   //turn off our driver
   digitalWrite(RESET_PIN, LOW); //reset our board
@@ -428,3 +439,24 @@ boolean test_1_16_rev()
     return false;
   }
 }
+
+// samples the output from the acs712 current measurement chip.
+// returns the current level as a float representing the amperage
+// the acs712 comes in 3 flavors with different amp ratings: 5A, 20A, and 30A.
+// this code is currently set up to work with the 5A chip.
+// it is important to note, the output is linear and centered around 2.5V.
+// sensitivity levels:
+// 5A:  185mV / A
+// 20A: 100mV / A
+// 30A:  66mV / A
+
+#define VOLTS_PER_DIV (5.0 / 1024.0)
+float read_acs712_current(byte pin)
+{
+  int reading = analogRead(pin) - 512;
+  float voltage = (5.0 / 1024.0) * reading;
+  float amperage = voltage / 0.185
+  
+  return amperage;
+}
+
