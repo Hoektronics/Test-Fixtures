@@ -24,7 +24,7 @@
 //create our lcd object for later use.
 LiquidCrystal lcd(LCD_RS_PIN, LCD_E_PIN, LCD_DB4_PIN, LCD_DB5_PIN, LCD_DB6_PIN, LCD_DB7_PIN);
 
-void setup_testease()
+void testease_setup()
 {
   //setup our LEDS
   pinMode(TEST_LED_PIN, OUTPUT);
@@ -77,3 +77,41 @@ void testease_handle_test_end(bool pass)
     delay(1);
 }
 
+// samples the output from the acs712 current measurement chip.
+// returns the current level as a float representing the amperage
+// the acs712 comes in 3 flavors with different amp ratings: 5A, 20A, and 30A.
+// this code is currently set up to work with the 5A chip.
+// it is important to note, the output is linear and centered around 2.5V.
+// sensitivity levels:
+// 5A:  185mV / A
+// 20A: 100mV / A
+// 30A:  66mV / A
+
+#define VOLTS_PER_DIV (5.0 / 1024.0)
+float read_acs712_current(byte pin)
+{
+  int reading = analogRead(pin) - 512;
+  float voltage = (5.0 / 1024.0) * reading;
+  float amperage = voltage / 0.185
+  
+  return amperage;
+}
+
+boolean testease_measure_voltage(byte pin, float voltage, float tolerance)
+{
+  
+}
+
+boolean testease_measure_current(byte pin, float current, float tolerance)
+{
+  c = read_acs712_current(pin);
+  
+  if (c < (current + current*tolerance) && current > (current + current*tolerance))
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
