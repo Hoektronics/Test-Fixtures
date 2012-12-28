@@ -15,6 +15,16 @@ void encoder_setup()
   attachInterrupt(ENCODER_INTERRUPT_B, read_quadrature_b, CHANGE);
 }
 
+void encoder_set_position(int pos)
+{
+  encoder_position = pos;
+}
+
+int encoder_get_position()
+{
+  return encoder_position;
+}
+
 void read_quadrature_a()
 {  
   // found a low-to-high on channel A

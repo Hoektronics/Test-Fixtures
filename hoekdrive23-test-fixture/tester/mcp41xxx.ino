@@ -15,10 +15,10 @@ byte mcp41xxx_write(byte cs_pin, byte data, bool pot0, bool pot1)
 {
   byte command = (0x01 << 5) | (pot1 << 1) | pot0;
   
-  digitalWrite(pin, LOW);
+  digitalWrite(cs_pin, LOW);
   SPI.transfer(command);
-  SPI.transfer(data);
-  digitalWrite(pin, HIGH);
+  byte result = SPI.transfer(data);
+  digitalWrite(cs_pin, HIGH);
   
   return result;
 }
@@ -27,10 +27,10 @@ byte mcp41xxx_shutdown(byte cs_pin, bool pot0, bool pot1)
 {
   byte command = (0x02 << 5) | (pot1 << 1) | pot0;
   
-  digitalWrite(pin, LOW);
+  digitalWrite(cs_pin, LOW);
   SPI.transfer(command);
-  SPI.transfer(0);
-  digitalWrite(pin, HIGH);
+  byte result = SPI.transfer(0);
+  digitalWrite(cs_pin, HIGH);
   
   return result;
 }
